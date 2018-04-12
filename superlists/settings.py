@@ -45,6 +45,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'lists',
+    'accounts',
+]
+
+AUTH_USER_MODEL = 'accounts.User'
+AUTHENTICATION_BACKENDS = [
+    'accounts.authentication.PasswordlessAuthenticationBackend',
 ]
 
 MIDDLEWARE = [
@@ -77,6 +83,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'superlists.wsgi.application'
 
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'pruebas.sonata@gmail.com'
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_PASSWORD', 'vfimutuppvtsmdok')
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
 
 # Logging config
 LOGGING = {
