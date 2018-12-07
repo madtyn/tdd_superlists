@@ -35,7 +35,7 @@ def _update_virtualenv():
 
 
 def _create_or_update_dotenv():
-    # append adds a line to a file is is not there
+    # append adds a line to a file if is not there
     append('.env', 'DJANGO_DEBUG_FALSE=y')
     append('.env', f'SITENAME={env.host}')
     current_contents = run('cat .env')
@@ -44,6 +44,8 @@ def _create_or_update_dotenv():
             'abcdefghijklmnopqrstuvwxyz0123456789', k=50
         ))
         append('.env', f'DJANGO_SECRET_KEY={new_secret}')
+    email_password = os.environ['EMAIL_PASSWORD']
+    append('.env', f'EMAIL_PASSWORD={email_password}')
 
 
 def _update_static_files():

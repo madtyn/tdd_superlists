@@ -1,14 +1,13 @@
 import os
 import poplib
+import imaplib
 import re
 import time
 from django.core import mail
 from selenium.webdriver.common.keys import Keys
-import re
 
 from .base import FunctionalTest
 
-TEST_EMAIL = 'madtyn@gmail.com'
 SUBJECT = 'Your login link for Superlists'
 
 
@@ -22,17 +21,22 @@ class LoginTest(FunctionalTest):
 
         email_id = None
         start = time.time()
-        inbox = poplib.POP3_SSL('pop3.gmail.com')
+        inbox = imaplib.IMAP4_SSL('imap.gmail.com')
+        
         try:
-            inbox.user(test_email)
-            inbox.pass_(os.environ['GMAIL_PASSWORD'])
+            inbox.login(test_email, os.environ['GMAIL_PASSWORD'])
+            inbox.select('inbox')
+            type_, data = inbox.search(None, 'ALL')
+            id_list = data[0].split()
+            last = int(id_list[-1])
             while time.time() - start < 60:
                 # get 10 newest messages
-                count, __ = inbox.stat()
-                for i in reversed(range(max(1, count - 10), count + 1)):
+                
+
+                for i in range(last, last-10, -1):
                     print('getting msg', i)
-                    __, lines, __ = inbox.stat()
-                    lines = [l.decode('utf8') for l in lines]
+                    typ, data = inbox.fetch(str(last), '(RFC822)')
+                    lines = [line.strip() for line in data[0][1].decode('utf8').split('\n')]
                     print(lines)
                     if f'Subject: {subject}' in lines:
                         email_id = i
@@ -41,8 +45,10 @@ class LoginTest(FunctionalTest):
                 time.sleep(5)
         finally:
             if email_id:
-                inbox.dele(email_id)
-            inbox.quit()
+                inbox.store(str(email_id), '+FLAGS', '\\Deleted')
+                inbox.expunge()
+            inbox.logout()
+
 
     def test_can_get_email_link_to_log_in(self):
         # Edith goes to the awesome superlists site
@@ -52,6 +58,7 @@ class LoginTest(FunctionalTest):
             test_email = 'madtyn@gmail.com'
         else:
             test_email = 'edith@example.com'
+
         self.browser.get(self.live_server_url)
         self.browser.find_element_by_name('email').send_keys(test_email)
         self.browser.find_element_by_name('email').send_keys(Keys.ENTER)
