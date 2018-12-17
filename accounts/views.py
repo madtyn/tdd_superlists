@@ -2,9 +2,10 @@ from django.contrib import auth, messages
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
-
+from django.contrib.auth import get_user_model
 from accounts.models import Token
 
+User = get_user_model()
 
 def send_login_email(request):
     email = request.POST['email']
@@ -32,3 +33,6 @@ def login(request):
         auth.login(request, user)
     return redirect('/')
 
+def my_lists(request, email):
+    owner = User.objects.get(email=email)
+    return render(request, 'my_lists.html', {'owner', owner})
